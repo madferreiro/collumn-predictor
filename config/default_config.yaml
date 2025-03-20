@@ -1,0 +1,7 @@
+preprocessing:
+  missing_threshold: 0.5  # 50% missing values threshold
+  normalize: true
+  max_one_hot_categories: 10  # Maximum number of categories for one-hot encoding
+
+analysis:
+  correlation_threshold: 0.8  # Threshold for considering features highly correlated
