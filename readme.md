@@ -65,3 +65,9 @@ Determine which columns in a dataset best predict a target variable by ranking f
 
 This structure ensures a clear and modular approach to implementing automatic feature importance detection using statistical correlation analysis.  
 
+
+## Usage example 
+python -m src.cli minimal.csv Salary
+
+Most relevant features:
+- Age
