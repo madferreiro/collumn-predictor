@@ -2,12 +2,14 @@ import os
 from dataclasses import dataclass
 from typing import List, Any
 import pandas as pd
-from src.preprocessing.missing_values import handle_missing_values
+from .preprocessing.missing_values import handle_missing_values
+from .validations import file_exists, is_valid_csv, has_target_column
 
 @dataclass
 class Response:
     success: bool
     result: List[Any]
+    error_message: str = ""
 
 def analyze_features(filename: str, target_column: str) -> Response:
     """
@@ -20,22 +22,24 @@ def analyze_features(filename: str, target_column: str) -> Response:
     Returns:
         Response: Object containing success status and results
     """
-    # Check if file exists in data directory
+    # Validate file exists
+    exists, error = file_exists(filename)
+    if not exists:
+        return Response(success=False, result=[], error_message=error)
+    
+    # Validate CSV is valid
+    is_valid, error = is_valid_csv(filename)
+    if not is_valid:
+        return Response(success=False, result=[], error_message=error)
+    
+    # Validate target column exists
+    has_column, error = has_target_column(filename, target_column)
+    if not has_column:
+        return Response(success=False, result=[], error_message=error)
+    
+    # Read CSV file (we know it's valid now)
     file_path = os.path.join('data', filename)
-    if not os.path.exists(file_path):
-        return Response(success=False, result=[])
-    
-    # Read CSV file
-    try:
-        df = pd.read_csv(file_path)
-    except pd.errors.EmptyDataError:
-        return Response(success=False, result=[])
-    except Exception as e:
-        return Response(success=False, result=[])
-    
-    # Validate target column exists in DataFrame
-    if target_column not in df.columns:
-        return Response(success=False, result=[])
+    df = pd.read_csv(file_path)
     
     # Handle missing values
     df_cleaned, removed_columns = handle_missing_values(df, threshold=0.5)

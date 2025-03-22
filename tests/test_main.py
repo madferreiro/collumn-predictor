@@ -43,3 +43,17 @@ def test_analyze_features_empty_csv():
     # Clean up
     import os
     os.remove('data/empty.csv')
+
+def test_analyze_features_generic_exception():
+    # Create a file that exists but will cause a read error
+    with open('data/bad.csv', 'w') as f:
+        f.write('column1,column2\n1,2\n"unclosed_quote,3')  # Malformed CSV
+    
+    result = analyze_features("bad.csv", target_column="target")
+    assert isinstance(result, Response)
+    assert result.success is False
+    assert result.result == []
+    
+    # Clean up
+    import os
+    os.remove('data/bad.csv')
