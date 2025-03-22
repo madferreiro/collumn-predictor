@@ -47,4 +47,18 @@ def test_detect_feature_types_mixed():
     assert types[0] == 'numerical'  # age
     assert types[1] == 'categorical'  # gender
     assert types[2] == 'numerical'  # salary
-    assert types[3] == 'categorical'  # education 
+    assert types[3] == 'categorical'  # education
+
+def test_detect_feature_types_datetime():
+    # Create DataFrame with datetime column
+    df = pd.DataFrame({
+        'date': pd.date_range('2024-01-01', periods=3),
+        'age': [25, 30, 35]
+    })
+    
+    names, types = detect_feature_types(df)
+    
+    assert len(names) == 2
+    assert len(types) == 2
+    assert types[0] == 'numerical'  # datetime defaults to numerical
+    assert types[1] == 'numerical'  # age 

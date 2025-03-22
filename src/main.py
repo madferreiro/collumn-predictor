@@ -28,10 +28,14 @@ def analyze_features(filename: str, target_column: str) -> Response:
     # Read CSV file
     try:
         df = pd.read_csv(file_path)
+    except pd.errors.EmptyDataError:
+        return Response(success=False, result=[])
     except Exception as e:
         return Response(success=False, result=[])
     
-    # TODO: Validate target column exists in DataFrame
+    # Validate target column exists in DataFrame
+    if target_column not in df.columns:
+        return Response(success=False, result=[])
     
     # Handle missing values
     df_cleaned, removed_columns = handle_missing_values(df, threshold=0.5)
