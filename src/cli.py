@@ -15,10 +15,15 @@ def main():
         'target_column',
         help='Name of the column to predict'
     )
+    parser.add_argument(
+        '-debug',
+        action='store_true',
+        help='Show debug information including correlation matrix'
+    )
     
     args = parser.parse_args()
     
-    result = analyze_features(args.filename, args.target_column)
+    result = analyze_features(args.filename, args.target_column, debug=args.debug)
     
     if not result.success:
         print(f"Error: {result.error_message}")

@@ -4,6 +4,7 @@ from typing import List, Any
 import pandas as pd
 from .preprocessing.missing_values import handle_missing_values
 from .validations import file_exists, is_valid_csv, has_target_column
+from .analysis.correlation import compute_correlation_scores
 
 @dataclass
 class Response:
@@ -11,13 +12,14 @@ class Response:
     result: List[Any]
     error_message: str = ""
 
-def analyze_features(filename: str, target_column: str) -> Response:
+def analyze_features(filename: str, target_column: str, debug: bool = False) -> Response:
     """
     Analyze features in a CSV file to determine which columns best predict a target variable.
     
     Args:
         filename (str): Name of the CSV file in the data directory
         target_column (str): Name of the column to predict
+        debug (bool): If True, prints debug information including correlation matrix
         
     Returns:
         Response: Object containing success status and results
@@ -44,6 +46,19 @@ def analyze_features(filename: str, target_column: str) -> Response:
     # Handle missing values
     df_cleaned, removed_columns = handle_missing_values(df, threshold=0.5)
     
-    # Return all columns except target
-    feature_columns = [col for col in df_cleaned.columns if col != target_column]
-    return Response(success=True, result=feature_columns)
+    if debug:
+        # Get numerical columns only for correlation matrix
+        numeric_df = df_cleaned.select_dtypes(include=['number'])
+        if not numeric_df.empty:
+            print("\nCorrelation Matrix:")
+            pd.set_option('display.max_columns', None)
+            pd.set_option('display.width', None)
+            print(numeric_df.corr().round(3))
+            pd.reset_option('display.max_columns')
+            pd.reset_option('display.width')
+    
+    # Calculate correlation scores
+    correlation_df = compute_correlation_scores(df_cleaned, target_column)
+    
+    # Return features sorted by importance (absolute correlation)
+    return Response(success=True, result=correlation_df['feature'].tolist())
